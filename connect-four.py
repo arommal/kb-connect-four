@@ -29,11 +29,19 @@ C_BG    = (239, 235, 241)
 C_BALLA = (245, 65, 183)
 C_BALLB = (157, 134, 222)
 
-def createboard():
+def createboard(ROW, COLUMN):
     board = np.full((ROW, COLUMN), -1)
     return board
 
-def drawboard(board):
+def drawboard(board, ROW, COLUMN, height, width):
+    if ROW == 5 and COLUMN == 6:
+        w = 190
+        h = 240
+
+    if ROW == 6 and COLUMN == 7:
+        w = 150
+        h = 200
+
     for c in range(COLUMN):
         for r in range(ROW):
             # Rect(left, top, width, height)
@@ -52,13 +60,13 @@ def drawboard(board):
 def printboard(board):
     print(np.flip(board, 0))
 
-def check_location(board, col):
-    if(board[ROW - 1][col] == -1):
+def check_location(board, ROW, col):
+    if board[ROW - 1][col] == -1:
         return True
     else:
         return False
 
-def next_valid_row(board, col):
+def next_valid_row(board, ROW, col):
     for r in range(ROW):
         if board[r][col] == -1:
             return r
@@ -66,7 +74,7 @@ def next_valid_row(board, col):
 def drop_ball(board, row, col, playerid):
     board[row][col] = playerid
 
-def is_winning(board, playerid):
+def is_winning(board, playerid, ROW, COLUMN):
     for c in range(COLUMN - 3):
         for r in range(ROW):
             if board[r][c] == playerid and board[r][c+1] == playerid and board[r][c+2] == playerid and board[r][c+3] == playerid:
@@ -89,17 +97,17 @@ def is_winning(board, playerid):
     
     return False
 
-def get_valid_cols(board):
+def get_valid_cols(board, ROW, COLUMN):
     valid_cols = []
     for c in range(COLUMN):
-        if next_valid_row(board, c):
+        if check_location(board, ROW, c):
             valid_cols.append(c)
     return valid_cols
 
-def check_is_ending(board):
-    a = is_winning(board, 0)
-    b = is_winning(board, 1)
-    valid_columns = len(get_valid_cols(board))
+def check_is_ending(board, ROW, COLUMN):
+    a = is_winning(board, 0, ROW, COLUMN)
+    b = is_winning(board, 1, ROW, COLUMN)
+    valid_columns = len(get_valid_cols(board, ROW, COLUMN))
     return a or b or valid_columns == 0
 
 def evaluate_sequence(sequence, playerid):
@@ -122,7 +130,7 @@ def evaluate_sequence(sequence, playerid):
     return score
 
 
-def score_position(board, playerid):
+def score_position(board, playerid, ROW, COLUMN):
     score = 0
 
     center_array = [int(i) for i in list(board[:, COLUMN//2])]
@@ -153,27 +161,27 @@ def score_position(board, playerid):
 
     return score
 
-def alphabeta(board, depth, alpha, beta, maximizingPlayer):
-    valid_columns = get_valid_cols(board)
-    is_ending = check_is_ending(board)
+def alphabeta(board, depth, alpha, beta, maximizingPlayer, ROW, COLUMN):
+    valid_columns = get_valid_cols(board, ROW, COLUMN)
+    is_ending = check_is_ending(board, ROW, COLUMN)
     if depth == 0 or is_ending:
         if is_ending:
-            if is_winning(board, 1):
-                return(None, 100000000000000)
-            elif is_winning(board, 0):
-                return(None, -100000000000000)
+            if is_winning(board, 1, ROW, COLUMN):
+                return(None, 1000000000000)
+            elif is_winning(board, 0, ROW, COLUMN):
+                return(None, -1000000000000)
             else:
                 return(None, 0)
         else:
-            return(None, score_position(board, 1))
+            return(None, score_position(board, 1, ROW, COLUMN))
     if maximizingPlayer:
         val = -math.inf
         column = random.choice(valid_columns)
         for c in valid_columns:
-            r = next_valid_row(board, c)
+            r = next_valid_row(board, ROW, c)
             temp_board = board.copy()
             drop_ball(temp_board, r, c, 1)
-            new_score = alphabeta(temp_board, depth-1, alpha, beta, False)[1]
+            new_score = alphabeta(temp_board, depth-1, alpha, beta, False, ROW, COLUMN)[1]
             if new_score > val:
                 val = new_score
                 column = c
@@ -185,10 +193,10 @@ def alphabeta(board, depth, alpha, beta, maximizingPlayer):
         val = math.inf
         column = random.choice(valid_columns)
         for c in valid_columns:
-            r = next_valid_row(board, c)
+            r = next_valid_row(board, ROW, c)
             temp_board = board.copy()
             drop_ball(temp_board, r, c, 0)
-            new_score = alphabeta(temp_board, depth-1, alpha, beta, True)[1]
+            new_score = alphabeta(temp_board, depth-1, alpha, beta, True, ROW, COLUMN)[1]
             if new_score < val:
                 val = new_score
                 column = c
@@ -197,17 +205,67 @@ def alphabeta(board, depth, alpha, beta, maximizingPlayer):
                 break
         return column, val
 
-
-board = createboard()
-printboard(board)
-drawboard(board)
-
-gameover = False
-turn = 0
-
 pygame.init()
 pygame.display.update()
 font = pygame.font.SysFont("Courier New", 50)
+
+logoImg = pygame.image.load('./assets/pixel/asset14.png')
+logoImg = pygame.transform.scale(logoImg, (385, 224))
+optionAImg = pygame.image.load('./assets/pixel/asset9.png')
+optionAImg = pygame.transform.scale(optionAImg, (205, 81))
+optionBImg = pygame.image.load('./assets/pixel/asset10.png')
+optionBImg = pygame.transform.scale(optionBImg, (205, 81))
+
+logoImgRect = logoImg.get_rect(center=(SCREEN_WIDTH/2, h+50))
+optionAImgRect = optionAImg.get_rect(center=(SCREEN_WIDTH/2, h*2.5))
+optionBImgRect = optionBImg.get_rect(center=(SCREEN_WIDTH/2, h*3))
+
+mainmenu = True
+
+while mainmenu:
+    surface.fill(WHITE)
+    surface.blit(logoImg, logoImgRect)
+    surface.blit(optionAImg, optionAImgRect)
+    surface.blit(optionBImg, optionBImgRect)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            sys.exit()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            x, y = event.pos
+            if optionAImgRect.collidepoint(x, y):
+                ROW = 6
+                COLUMN = 7
+                mainmenu = False
+                surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+                break
+            if optionBImgRect.collidepoint(x, y):
+                ROW = 5
+                COLUMN = 6
+                mainmenu = False
+                surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+                break
+    pygame.display.update()
+    
+if ROW == 6 and COLUMN == 7:
+    height = 200 + SQUARE_PX * (ROW + 1)
+    width = 150 + SQUARE_PX * COLUMN
+    w = 150
+    h = 200
+
+if ROW == 5 and COLUMN == 6:
+    height = 240 + SQUARE_PX * (ROW + 1)
+    width = 190 + SQUARE_PX * COLUMN
+    w = 190
+    h = 240
+
+board = createboard(ROW, COLUMN)
+printboard(board)
+drawboard(board, ROW, COLUMN, height, width)
+
+gameover = False
+turn = 0
+pygame.display.update()
 
 while not gameover:
     for event in pygame.event.get():
@@ -228,41 +286,48 @@ while not gameover:
         pygame.display.update()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
-            pygame.draw.rect(surface, BLACK, (w, h, width, SQUARE_PX))
 
             # player 1
             if turn == 0:
                 posix = event.pos[0]
                 column = int(math.floor((posix - w)/ (SQUARE_PX)))
 
-                if check_location(board, column):
-                    row = next_valid_row(board, column)
+                if check_location(board, ROW, column):
+                    row = next_valid_row(board, ROW, column)
                     drop_ball(board, row, column, 0)
 
-                    if is_winning(board, 0):
+                    if is_winning(board, 0, ROW, COLUMN):
                         label = font.render("Player 1 Wins", True, WHITE)
                         label_rect = label.get_rect(center=(SCREEN_WIDTH/2, h))
+                        pygame.draw.rect(surface, BLACK, pygame.Rect(w, h, width - w, SQUARE_PX))
                         surface.blit(label, label_rect)
                         gameover = True
-            # player 2
-            else:
-                column, score = alphabeta(board, 3, -math.inf, math.inf, True)
-                # column -= (int)(w / SQUARE_PX)
-                
-                if check_location(board, column):
-                    row = next_valid_row(board, column)
-                    drop_ball(board, row, column, 1)
+                    
+                    printboard(board)
+                    drawboard(board, ROW, COLUMN, height, width)
+                    turn += 1
+                    turn = turn % 2
 
-                    if is_winning(board, 1):
-                        label = font.render("Player 2 Wins", True, WHITE)
-                        label_rect = label.get_rect(center=(SCREEN_WIDTH/2, h))
-                        surface.blit(label, label_rect)
-                        gameover = True
+    # player AI
+    if turn == 1 and not gameover:
+        column, score = alphabeta(board, 3, -math.inf, math.inf, True, ROW, COLUMN)
+            
+        if check_location(board, ROW, column):
+            row = next_valid_row(board, ROW, column)
+            pygame.time.wait(500)
+            drop_ball(board, row, column, 1)
 
-            printboard(board)
-            drawboard(board)
-            turn += 1
-            turn = turn % 2
+            if is_winning(board, 1, ROW, COLUMN):
+                label = font.render("Player 2 Wins", True, WHITE)
+                label_rect = label.get_rect(center=(SCREEN_WIDTH/2, h))
+                pygame.draw.rect(surface, BLACK, pygame.Rect(w, h, width - w, SQUARE_PX))
+                surface.blit(label, label_rect)
+                gameover = True
 
-            if gameover:
-                pygame.time.wait(5000)
+        printboard(board)
+        drawboard(board, ROW, COLUMN, height, width)
+        turn += 1
+        turn = turn % 2
+
+    if gameover:
+        pygame.time.wait(5000)
