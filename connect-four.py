@@ -2,6 +2,7 @@ import numpy as np
 import pygame
 import sys
 import math
+import random
 
 ROW = 6
 COLUMN = 7
@@ -88,6 +89,115 @@ def is_winning(board, playerid):
     
     return False
 
+def get_valid_cols(board):
+    valid_cols = []
+    for c in range(COLUMN):
+        if next_valid_row(board, c):
+            valid_cols.append(c)
+    return valid_cols
+
+def check_is_ending(board):
+    a = is_winning(board, 0)
+    b = is_winning(board, 1)
+    valid_columns = len(get_valid_cols(board))
+    return a or b or valid_columns == 0
+
+def evaluate_sequence(sequence, playerid):
+    score = 0
+    if(playerid == 1):
+        opponentid = 0
+    else:
+        opponentid = 1
+
+    if sequence.count(playerid) == 4:
+        score += 100
+    elif sequence.count(playerid) == 3 and sequence.count(-1) == 1:
+        score += 5
+    elif sequence.count(playerid) == 2 and sequence.count(-1) == 2:
+        score += 2
+
+    if sequence.count(opponentid) == 3 and sequence.count(-1) == 1:
+        score -= 4
+
+    return score
+
+
+def score_position(board, playerid):
+    score = 0
+
+    center_array = [int(i) for i in list(board[:, COLUMN//2])]
+    center_count = center_array.count(playerid)
+    score += center_count * 3
+
+    for r in range(ROW):
+        row_array = [int(i) for i in list(board[r, :])]
+        for c in range(COLUMN - 3):
+            sequence = row_array[c:c+4]
+            score += evaluate_sequence(sequence, playerid)
+    
+    for c in range(COLUMN):
+        column_array = [int(i) for i in list(board[:, c])]
+        for r in range(ROW - 3):
+            sequence = column_array[r:r+4]
+            score += evaluate_sequence(sequence, playerid)
+
+    for r in range(ROW - 3):
+        for c in range(COLUMN - 3):
+            sequence = [board[r+i][c+i] for i in range(4)]
+            score += evaluate_sequence(sequence, playerid)
+
+    for r in range(ROW - 3):
+        for c in range(COLUMN - 3):
+            sequence = [board[r+3-i][c+i] for i in range(4)]
+            score += evaluate_sequence(sequence, playerid)
+
+    return score
+
+def alphabeta(board, depth, alpha, beta, maximizingPlayer):
+    valid_columns = get_valid_cols(board)
+    is_ending = check_is_ending(board)
+    if depth == 0 or is_ending:
+        if is_ending:
+            if is_winning(board, 1):
+                return(None, 100000000000000)
+            elif is_winning(board, 0):
+                return(None, -100000000000000)
+            else:
+                return(None, 0)
+        else:
+            return(None, score_position(board, 1))
+    if maximizingPlayer:
+        val = -math.inf
+        column = random.choice(valid_columns)
+        for c in valid_columns:
+            r = next_valid_row(board, c)
+            temp_board = board.copy()
+            drop_ball(temp_board, r, c, 1)
+            new_score = alphabeta(temp_board, depth-1, alpha, beta, False)[1]
+            if new_score > val:
+                val = new_score
+                column = c
+            alpha = max(alpha, val)
+            if alpha >= beta:
+                break
+        return column, val
+    else:
+        val = math.inf
+        column = random.choice(valid_columns)
+        for c in valid_columns:
+            r = next_valid_row(board, c)
+            temp_board = board.copy()
+            drop_ball(temp_board, r, c, 0)
+            new_score = alphabeta(temp_board, depth-1, alpha, beta, True)[1]
+            if new_score < val:
+                val = new_score
+                column = c
+            beta = min(beta, val)
+            if alpha >= beta:
+                break
+        return column, val
+
+
 board = createboard()
 printboard(board)
 drawboard(board)
@@ -136,9 +246,9 @@ while not gameover:
                         gameover = True
             # player 2
             else:
-                posix = event.pos[0]
-                column = int(math.floor((posix - w) / SQUARE_PX))
-
+                column, score = alphabeta(board, 3, -math.inf, math.inf, True)
+                # column -= (int)(w / SQUARE_PX)
+                
                 if check_location(board, column):
                     row = next_valid_row(board, column)
                     drop_ball(board, row, column, 1)
