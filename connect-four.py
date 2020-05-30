@@ -325,11 +325,11 @@ pygame.display.update()
 
 while not gameover:
     # back to menu and quit buttons
-    menuImgRect = menuImg.get_rect(100, h*4.5)
-    quitImgRect = quitImg.get_rect(SCREEN_WIDTH-100, h*4.5)
+    # menuImgRect = menuImg.get_rect(100, h*4.5)
+    # quitImgRect = quitImg.get_rect(SCREEN_WIDTH-100, h*4.5)
 
-    surface.blit(quitImg, quitImgRect)
-    surface.blit(menuImg, menuImgRect)
+    # surface.blit(quitImg, quitImgRect)
+    # surface.blit(menuImg, menuImgRect)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
