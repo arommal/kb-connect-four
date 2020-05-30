@@ -320,24 +320,24 @@ printboard(board)
 drawboard(board, ROW, COLUMN, height, width)
 
 gameover = False
+idle = False
 turn = 0
 # pygame.display.update()
 
 while not gameover:
-    # back to menu and quit buttons
-    # menuImgRect = menuImg.get_rect(100, h*4.5)
-    # quitImgRect = quitImg.get_rect(SCREEN_WIDTH-100, h*4.5)
-
-    # surface.blit(quitImg, quitImgRect)
-    # surface.blit(menuImg, menuImgRect)
+    quitImgRect = quitImg.get_rect(topleft=(100, 50))
+    menuImgRect = menuImg.get_rect(topright=(SCREEN_WIDTH - 100, 50))
+    surface.blit(quitImg, quitImgRect)
+    surface.blit(menuImg, menuImgRect)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
 
+        pygame.draw.rect(surface, WHITE, pygame.Rect(w, h, width - w, SQUARE_PX))
+        
         # mouse movement listener
-        if event.type == pygame.MOUSEMOTION and event.pos[0] < (1000-w-RAD) and event.pos[0] > w+RAD:
-            pygame.draw.rect(surface, WHITE, pygame.Rect(w, h, width - w, SQUARE_PX))
+        if event.type == pygame.MOUSEMOTION and event.pos[0] < (1000-w-RAD) and event.pos[0] > w+RAD and event.pos[1] > 130:
             posix = event.pos[0]
             print(posix)
 
@@ -349,11 +349,15 @@ while not gameover:
         pygame.display.update()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
-
+            x, y = event.pos
+            if menuImgRect.collidepoint(x, y):
+                gameover = True
+                idle = False
+            elif quitImgRect.collidepoint(x, y):
+                sys.exit()
             # player 1
             if turn == 0:
-                posix = event.pos[0]
-                column = int(math.floor((posix - w)/ (SQUARE_PX)))
+                column = int(math.floor((x - w)/ (SQUARE_PX)))
 
                 if check_location(board, ROW, column):
                     row = next_valid_row(board, ROW, column)
@@ -365,6 +369,7 @@ while not gameover:
                         pygame.draw.rect(surface, BLACK, pygame.Rect(w, h, width - w, SQUARE_PX))
                         surface.blit(label, label_rect)
                         gameover = True
+                        idle = True
                     
                     printboard(board)
                     drawboard(board, ROW, COLUMN, height, width)
@@ -386,6 +391,7 @@ while not gameover:
                 pygame.draw.rect(surface, BLACK, pygame.Rect(w, h, width - w, SQUARE_PX))
                 surface.blit(label, label_rect)
                 gameover = True
+                idle = True
 
         printboard(board)
         drawboard(board, ROW, COLUMN, height, width)
@@ -393,41 +399,57 @@ while not gameover:
         turn = turn % 2
 
     if gameover:
-        menuImgRect = menuImg.get_rect(center=(SCREEN_WIDTH/2, h*2.5))
-        quitImgRect = quitImg.get_rect(center=(SCREEN_WIDTH/2, h*3))
-
-        idle = True
-
-        while idle:
+        if not idle:
+            ROW, COLUMN = callmenu()
+            if ROW == 6 and COLUMN == 7:
+                height = 200 + SQUARE_PX * (ROW + 1)
+                width = 150 + SQUARE_PX * COLUMN
+                w = 150
+                h = 200
+            elif ROW == 5 and COLUMN == 6:
+                height = 240 + SQUARE_PX * (ROW + 1)
+                width = 190 + SQUARE_PX * COLUMN
+                w = 190
+                h = 240
+            board = createboard(ROW, COLUMN)
+            printboard(board)
+            drawboard(board, ROW, COLUMN, height, width)
+            gameover = False
+            turn = 0
             pygame.display.update()
+        else:
+            menuImgRect = menuImg.get_rect(center=(SCREEN_WIDTH/2, h*2.5))
+            quitImgRect = quitImg.get_rect(center=(SCREEN_WIDTH/2, h*3))
 
-            surface.fill(WHITE)
-            surface.blit(quitImg, quitImgRect)
-            surface.blit(menuImg, menuImgRect)
+            while idle:
+                pygame.display.update()
 
-            for event in pygame.event.get():
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    x, y = event.pos
-                    if menuImgRect.collidepoint(x, y):
-                        ROW, COLUMN = callmenu()
-                        if ROW == 6 and COLUMN == 7:
-                            height = 200 + SQUARE_PX * (ROW + 1)
-                            width = 150 + SQUARE_PX * COLUMN
-                            w = 150
-                            h = 200
+                surface.fill(WHITE)
+                surface.blit(quitImg, quitImgRect)
+                surface.blit(menuImg, menuImgRect)
+
+                for event in pygame.event.get():
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        x, y = event.pos
+                        if menuImgRect.collidepoint(x, y):
+                            ROW, COLUMN = callmenu()
+                            if ROW == 6 and COLUMN == 7:
+                                height = 200 + SQUARE_PX * (ROW + 1)
+                                width = 150 + SQUARE_PX * COLUMN
+                                w = 150
+                                h = 200
+                            elif ROW == 5 and COLUMN == 6:
+                                height = 240 + SQUARE_PX * (ROW + 1)
+                                width = 190 + SQUARE_PX * COLUMN
+                                w = 190
+                                h = 240
+                            board = createboard(ROW, COLUMN)
+                            printboard(board)
+                            drawboard(board, ROW, COLUMN, height, width)
+                            gameover = False
                             idle = False
-                        elif ROW == 5 and COLUMN == 6:
-                            height = 240 + SQUARE_PX * (ROW + 1)
-                            width = 190 + SQUARE_PX * COLUMN
-                            w = 190
-                            h = 240
-                            idle = False
-                        board = createboard(ROW, COLUMN)
-                        printboard(board)
-                        drawboard(board, ROW, COLUMN, height, width)
-                        gameover = False
-                        turn = 0
-                    elif quitImgRect.collidepoint(x, y):
-                        sys.exit()
-            pygame.display.update()
+                            turn = 0
+                        elif quitImgRect.collidepoint(x, y):
+                            sys.exit()
+                pygame.display.update()
 
