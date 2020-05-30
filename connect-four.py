@@ -211,9 +211,12 @@ def showinstruction():
     quitImg = pygame.transform.scale(quitImg, (205, 81))
     menuImg = pygame.image.load('./assets/pixel/asset15.png')
     menuImg = pygame.transform.scale(menuImg, (360, 81))
+    instImg = pygame.image.load('./assets/pixel/asset17.png')
+    instImg = pygame.transform.scale(instImg, (1000, 345))
 
     menuImgRect = menuImg.get_rect(center=(SCREEN_WIDTH/2, h*4))
     quitImgRect = quitImg.get_rect(center=(SCREEN_WIDTH/2, h*4.5))
+    instImgRect = instImg.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT - (h * 4)))
 
     instruction = True
 
@@ -222,6 +225,7 @@ def showinstruction():
         surface.fill(WHITE)
         surface.blit(quitImg, quitImgRect)
         surface.blit(menuImg, menuImgRect)
+        surface.blit(instImg, instImgRect)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
