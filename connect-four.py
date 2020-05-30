@@ -166,7 +166,7 @@ def alphabeta(board, depth, alpha, beta, maximizingPlayer, ROW, COLUMN):
     is_ending = check_is_ending(board, ROW, COLUMN)
     if depth == 0 or is_ending:
         if is_ending:
-            if is_winning(board, 1, ROW, COLUMN):
+            if is_winning(board, 1, ROW, COLUMN):           # AI wins
                 return(None, 1000000000000)
             elif is_winning(board, 0, ROW, COLUMN):
                 return(None, -1000000000000)
@@ -205,59 +205,115 @@ def alphabeta(board, depth, alpha, beta, maximizingPlayer, ROW, COLUMN):
                 break
         return column, val
 
+def showinstruction():
+    pygame.display.update()
+    quitImg = pygame.image.load('./assets/pixel/asset12.png')
+    quitImg = pygame.transform.scale(quitImg, (205, 81))
+    menuImg = pygame.image.load('./assets/pixel/asset15.png')
+    menuImg = pygame.transform.scale(menuImg, (360, 81))
+
+    menuImgRect = menuImg.get_rect(center=(SCREEN_WIDTH/2, h*4))
+    quitImgRect = quitImg.get_rect(center=(SCREEN_WIDTH/2, h*4.5))
+
+    instruction = True
+
+    while instruction:
+        surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        surface.fill(WHITE)
+        surface.blit(quitImg, quitImgRect)
+        surface.blit(menuImg, menuImgRect)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                if menuImgRect.collidepoint(x, y):
+                    callmenu()
+                    return
+                elif quitImgRect.collidepoint(x, y):
+                    sys.exit()
+                    return
+        pygame.display.update()
+
+def callmenu():
+    pygame.init()
+    pygame.display.update()
+    logoImg = pygame.image.load('./assets/pixel/asset14.png')
+    logoImg = pygame.transform.scale(logoImg, (385, 224))
+    optionAImg = pygame.image.load('./assets/pixel/asset9.png')
+    optionAImg = pygame.transform.scale(optionAImg, (205, 81))
+    optionBImg = pygame.image.load('./assets/pixel/asset10.png')
+    optionBImg = pygame.transform.scale(optionBImg, (205, 81))
+    instructionImg = pygame.image.load('./assets/pixel/asset16.png')
+    instructionImg = pygame.transform.scale(instructionImg, (360, 81))
+    quitImg = pygame.image.load('./assets/pixel/asset12.png')
+    quitImg = pygame.transform.scale(quitImg, (205, 81))
+
+    logoImgRect = logoImg.get_rect(center=(SCREEN_WIDTH/2, h+50))
+    optionAImgRect = optionAImg.get_rect(center=(SCREEN_WIDTH/2, h*2.5))
+    optionBImgRect = optionBImg.get_rect(center=(SCREEN_WIDTH/2, h*3))
+    instructionImgRect = instructionImg.get_rect(center=(SCREEN_WIDTH/2, h*3.5))
+    # quitImgRect = quitImg.get_rect(SCREEN_WIDTH+50, h*4)
+
+    mainmenu = True
+
+    while mainmenu:
+        surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        surface.fill(WHITE)
+        surface.blit(logoImg, logoImgRect)
+        surface.blit(optionAImg, optionAImgRect)
+        surface.blit(optionBImg, optionBImgRect)
+        surface.blit(instructionImg, instructionImgRect)
+
+        ROW = 0
+        COLUMN = 0
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                if optionAImgRect.collidepoint(x, y):
+                    ROW = 6
+                    COLUMN = 7
+                    mainmenu = False
+                    surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+                    return ROW, COLUMN
+                elif optionBImgRect.collidepoint(x, y):
+                    ROW = 5
+                    COLUMN = 6
+                    mainmenu = False
+                    surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+                    return ROW, COLUMN
+                elif instructionImgRect.collidepoint(x, y):
+                    showinstruction()
+        pygame.display.update()
+
+
 pygame.init()
 pygame.display.update()
 font = pygame.font.SysFont("Courier New", 50)
 
-logoImg = pygame.image.load('./assets/pixel/asset14.png')
-logoImg = pygame.transform.scale(logoImg, (385, 224))
-optionAImg = pygame.image.load('./assets/pixel/asset9.png')
-optionAImg = pygame.transform.scale(optionAImg, (205, 81))
-optionBImg = pygame.image.load('./assets/pixel/asset10.png')
-optionBImg = pygame.transform.scale(optionBImg, (205, 81))
+quitImg = pygame.image.load('./assets/pixel/asset12.png')
+quitImg = pygame.transform.scale(quitImg, (205, 81))
+menuImg = pygame.image.load('./assets/pixel/asset15.png')
+menuImg = pygame.transform.scale(menuImg, (360, 81))
 
-logoImgRect = logoImg.get_rect(center=(SCREEN_WIDTH/2, h+50))
-optionAImgRect = optionAImg.get_rect(center=(SCREEN_WIDTH/2, h*2.5))
-optionBImgRect = optionBImg.get_rect(center=(SCREEN_WIDTH/2, h*3))
+ROW, COLUMN = callmenu()
 
-mainmenu = True
-
-while mainmenu:
-    surface.fill(WHITE)
-    surface.blit(logoImg, logoImgRect)
-    surface.blit(optionAImg, optionAImgRect)
-    surface.blit(optionBImg, optionBImgRect)
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            sys.exit()
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            x, y = event.pos
-            if optionAImgRect.collidepoint(x, y):
-                ROW = 6
-                COLUMN = 7
-                mainmenu = False
-                surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-                break
-            if optionBImgRect.collidepoint(x, y):
-                ROW = 5
-                COLUMN = 6
-                mainmenu = False
-                surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-                break
-    pygame.display.update()
-    
 if ROW == 6 and COLUMN == 7:
     height = 200 + SQUARE_PX * (ROW + 1)
     width = 150 + SQUARE_PX * COLUMN
     w = 150
     h = 200
-
-if ROW == 5 and COLUMN == 6:
+    surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+elif ROW == 5 and COLUMN == 6:
     height = 240 + SQUARE_PX * (ROW + 1)
     width = 190 + SQUARE_PX * COLUMN
     w = 190
     h = 240
+    surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 board = createboard(ROW, COLUMN)
 printboard(board)
@@ -268,6 +324,13 @@ turn = 0
 pygame.display.update()
 
 while not gameover:
+    # back to menu and quit buttons
+    menuImgRect = menuImg.get_rect(100, h*4.5)
+    quitImgRect = quitImg.get_rect(SCREEN_WIDTH-100, h*4.5)
+
+    surface.blit(quitImg, quitImgRect)
+    surface.blit(menuImg, menuImgRect)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
@@ -330,4 +393,41 @@ while not gameover:
         turn = turn % 2
 
     if gameover:
-        pygame.time.wait(5000)
+        
+        menuImgRect = menuImg.get_rect(center=(SCREEN_WIDTH/2, h*2.5))
+        quitImgRect = quitImg.get_rect(center=(SCREEN_WIDTH/2, h*3))
+
+        idle = True
+
+        while idle:
+            pygame.display.update()
+
+            surface.fill(WHITE)
+            surface.blit(quitImg, quitImgRect)
+            surface.blit(menuImg, menuImgRect)
+
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    x, y = event.pos
+                    if menuImgRect.collidepoint(x, y):
+                        ROW, COLUMN = callmenu()
+                        if ROW == 6 and COLUMN == 7:
+                            height = 200 + SQUARE_PX * (ROW + 1)
+                            width = 150 + SQUARE_PX * COLUMN
+                            w = 150
+                            h = 200
+                            idle = False
+                            break
+                        elif ROW == 5 and COLUMN == 6:
+                            height = 240 + SQUARE_PX * (ROW + 1)
+                            width = 190 + SQUARE_PX * COLUMN
+                            w = 190
+                            h = 240
+                            idle = False
+                            break
+                        # back to main?
+                    elif quitImgRect.collidepoint(x, y):
+                        sys.exit()
+            # back to menu and quit buttons
+            pygame.display.update()
+
