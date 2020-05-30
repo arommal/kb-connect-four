@@ -321,7 +321,7 @@ drawboard(board, ROW, COLUMN, height, width)
 
 gameover = False
 turn = 0
-pygame.display.update()
+# pygame.display.update()
 
 while not gameover:
     # back to menu and quit buttons
@@ -393,7 +393,6 @@ while not gameover:
         turn = turn % 2
 
     if gameover:
-        
         menuImgRect = menuImg.get_rect(center=(SCREEN_WIDTH/2, h*2.5))
         quitImgRect = quitImg.get_rect(center=(SCREEN_WIDTH/2, h*3))
 
@@ -417,17 +416,18 @@ while not gameover:
                             w = 150
                             h = 200
                             idle = False
-                            break
                         elif ROW == 5 and COLUMN == 6:
                             height = 240 + SQUARE_PX * (ROW + 1)
                             width = 190 + SQUARE_PX * COLUMN
                             w = 190
                             h = 240
                             idle = False
-                            break
-                        # back to main?
+                        board = createboard(ROW, COLUMN)
+                        printboard(board)
+                        drawboard(board, ROW, COLUMN, height, width)
+                        gameover = False
+                        turn = 0
                     elif quitImgRect.collidepoint(x, y):
                         sys.exit()
-            # back to menu and quit buttons
             pygame.display.update()
 
