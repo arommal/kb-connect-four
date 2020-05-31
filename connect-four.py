@@ -233,8 +233,7 @@ def showinstruction():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
                 if menuImgRect.collidepoint(x, y):
-                    callmenu()
-                    return
+                    instruction = False
                 elif quitImgRect.collidepoint(x, y):
                     sys.exit()
                     return
@@ -297,7 +296,8 @@ def callmenu():
 
 pygame.init()
 pygame.display.update()
-font = pygame.font.SysFont("Courier New", 50)
+font = pygame.font.SysFont("Courier New", 100)
+font.set_bold(True)
 
 quitImg = pygame.image.load('./assets/pixel/asset12.png')
 quitImg = pygame.transform.scale(quitImg, (205, 81))
@@ -326,6 +326,7 @@ drawboard(board, ROW, COLUMN, height, width)
 gameover = False
 idle = False
 turn = 0
+winner = -1
 # pygame.display.update()
 
 while not gameover:
@@ -368,17 +369,16 @@ while not gameover:
                     drop_ball(board, row, column, 0)
 
                     if is_winning(board, 0, ROW, COLUMN):
-                        label = font.render("Player 1 Wins", True, WHITE)
-                        label_rect = label.get_rect(center=(SCREEN_WIDTH/2, h))
-                        pygame.draw.rect(surface, BLACK, pygame.Rect(w, h, width - w, SQUARE_PX))
-                        surface.blit(label, label_rect)
                         gameover = True
                         idle = True
+                        winner = 0
                     
                     printboard(board)
                     drawboard(board, ROW, COLUMN, height, width)
                     turn += 1
                     turn = turn % 2
+
+        pygame.display.update()
 
     # player AI
     if turn == 1 and not gameover:
@@ -390,19 +390,25 @@ while not gameover:
             drop_ball(board, row, column, 1)
 
             if is_winning(board, 1, ROW, COLUMN):
-                label = font.render("Player 2 Wins", True, WHITE)
-                label_rect = label.get_rect(center=(SCREEN_WIDTH/2, h))
-                pygame.draw.rect(surface, BLACK, pygame.Rect(w, h, width - w, SQUARE_PX))
-                surface.blit(label, label_rect)
                 gameover = True
                 idle = True
+                winner = 1
 
         printboard(board)
         drawboard(board, ROW, COLUMN, height, width)
         turn += 1
         turn = turn % 2
+    
+    pygame.display.update()
 
     if gameover:
+        if winner != -1:
+            if winner == 0:
+                label = font.render("You Win!", True, C_BALLA)
+            elif winner == 1:
+                label = font.render("AI Wins!", True, C_BALLB)
+            label_rect = label.get_rect(center=(SCREEN_WIDTH/2, h))
+
         if not idle:
             ROW, COLUMN = callmenu()
             if ROW == 6 and COLUMN == 7:
@@ -427,12 +433,14 @@ while not gameover:
 
             while idle:
                 pygame.display.update()
-
                 surface.fill(WHITE)
+                surface.blit(label, label_rect)
                 surface.blit(quitImg, quitImgRect)
                 surface.blit(menuImg, menuImgRect)
 
                 for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        sys.exit()
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         x, y = event.pos
                         if menuImgRect.collidepoint(x, y):
